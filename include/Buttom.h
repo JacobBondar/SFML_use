@@ -9,6 +9,7 @@ public:
 	sf::Sprite getPicture();
 	sf::Texture getTexture();
 	sf::Vector2f getPosition();
+	sf::FloatRect getGlobalBounds();
 
 private:
 	std::string m_type;

@@ -5,14 +5,15 @@ CustomizeWindow::CustomizeWindow(float col, float row)
 	: m_window(sf::VideoMode::getDesktopMode(), "Window"),
 	m_board(col * 100, row * 100)
 {
-	m_window.clear(); // To ensure the window is default
+	drawBoard();
+}
 
-	setBoard();
-	setButtoms();
-	setLines();
-
-
-	m_window.display();
+void CustomizeWindow::setPictures()
+{
+	for (int pic = 0; pic < m_pictures.size(); pic++)
+	{
+		m_window.draw(m_pictures[pic]);
+	}
 }
 
 void CustomizeWindow::setBoard()
@@ -172,73 +173,71 @@ sf::Vector2f CustomizeWindow::findTopLeft()
 void CustomizeWindow::run()
 {
 	auto event = sf::Event{};
+	int cellClicked = -1;
+
 	while (m_window.isOpen())
 	{
 		if (m_window.waitEvent(event))
 		{
 			switch (event.type)
 			{
-			case sf::Event::Closed:
-				m_window.close();
-				break;
-			case sf::Event::MouseButtonReleased:
-				break;
+				case sf::Event::Closed:
+				{
+					m_window.close();
+					break;
+				}
+				case sf::Event::MouseButtonReleased:
+				{
+					auto location = m_window.mapPixelToCoords(
+						{ event.mouseButton.x, event.mouseButton.y });
+
+					if (clickedOnButton(location, cellClicked)){}
+
+					else if(cellClicked >= 0)
+					{
+						placePicture(location, cellClicked);
+						drawBoard();
+					}
+
+					break;
+				}
 			}
 		}
 	}
 }
 
+bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked)
+{
+	for (int button = 0; button < m_buttoms.size(); button++)
+	{
+		if (m_buttoms[button].getGlobalBounds().contains(pointClicked))
+		{
+			cellClicked = button;
+			return true;
+		}
+	}
 
+	return false;
+}
 
+void CustomizeWindow::placePicture(sf::Vector2f location, int cellClicked)
+{
+	sf::Sprite picture = m_buttoms[cellClicked].getPicture();
+	//sf::Sprite picture(m_buttoms[cellClicked].getTexture());
 
+	picture.setOrigin(sf::Vector2f(picture.getTexture()->getSize() / 2u));
+	picture.setPosition(location);
+	m_pictures.push_back(picture);
+}
 
 void CustomizeWindow::drawBoard()
 {
-	for (int index = 0; index < m_buttoms.size(); index++)
-	{
-		m_window.draw(m_buttoms[index].getPicture());
-	}
-	 
+	m_window.clear(); // To ensure the window is default
 
+	setBoard();
+	setButtoms();
+	setLines();
+	setPictures();
+	
 	m_window.display();
 }
-
-/*
-void CustomizeWindow::run()
-{
-	auto event = sf::Event{};
-	while (m_window.isOpen())
-	{
-		if (m_window.waitEvent(event))
-		{
-			switch (event.type)
-			{
-			case sf::Event::Closed:
-				m_window.close();
-				break;
-			case sf::Event::MouseButtonReleased:
-				handleClick(event.mouseButton);
-				break;
-			}
-		}
-	}
-}
-
-void CustomizeWindow::handleClick(const sf::Event::MouseButtonEvent& event)
-{
-	m_window.clear();
-	if (m_circle.getGlobalBounds().contains(
-		m_window.mapPixelToCoords({ event.x, event.y })))
-	{
-		m_circle.setFillColor(sf::Color::Green);
-	}
-
-	else
-	{
-		m_circle.setOrigin(m_circle.getRadius(), m_circle.getRadius());
-		m_circle.setPosition(m_window.mapPixelToCoords({ event.x, event.y }));
-	}
-	m_window.draw(m_circle);
-	m_window.display();
-}
-*/

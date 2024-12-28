@@ -17,10 +17,16 @@ sf::Sprite Buttom::getPicture()
 
 sf::Texture Buttom::getTexture()
 {
-	return m_texturePicture;
+	sf::Texture texture = m_texturePicture;
+	return texture;
 }
 
 sf::Vector2f Buttom::getPosition()
 {
 	return m_picture.getPosition();
+}
+
+sf::FloatRect Buttom::getGlobalBounds()
+{
+	return m_picture.getGlobalBounds();
 }

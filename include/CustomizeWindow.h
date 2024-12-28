@@ -15,6 +15,7 @@ public:
 private:
 	sf::RenderWindow m_window;
 	std::vector <Buttom> m_buttoms;
+	std::vector <sf::Sprite> m_pictures;
 	Board m_board;
 
 	void setBoard();
@@ -23,4 +24,7 @@ private:
 	void createButtom(std::string typeName, sf::Vector2f &pos);
 	void setLines();
 	sf::Vector2f findTopLeft();
+	bool clickedOnButton(sf::Vector2f pointClicked, int& cellClicked);
+	void placePicture(sf::Vector2f location, int cellClicked);
+	void setPictures();
 };
