@@ -5,13 +5,11 @@
 #include "Buttom.h"
 #include "fstream"
 #include "Board.h"
-const int MIN_WIDTH = 500;
-const int HEIGHT_TOOLBAR = 500;
 
 class CustomizeWindow
 {
 public:
-	CustomizeWindow(int col, int row);
+	CustomizeWindow(float col, float row);
 	void run();
 
 private:
@@ -23,4 +21,6 @@ private:
 	void setButtoms();
 	void drawBoard();
 	void createButtom(std::string typeName, sf::Vector2f &pos);
+	void setLines();
+	sf::Vector2f findTopLeft();
 };

@@ -12,8 +12,12 @@ public:
 	sf::RectangleShape getBoard();
 	void setBoard(sf::Vector2f point);
 	void setOriginBoard();
+	sf::Vector2f getSize();
+	sf::Vector2f getPosition();
+	sf::Vector2f getTable();
 
 private:
 	sf::RectangleShape m_board;
-
+	float m_row;
+	float m_col;
 };

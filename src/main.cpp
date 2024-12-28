@@ -21,11 +21,11 @@ void getCoordinats(float& col, float& row)
 		return;
 	}*/
 
-	std::cout << "Enter col and row wanted for the board\n";
+	std::cout << "Enter col and row, that are divided by 70, wanted for the board\n";
 	
 	while (std::cin >> col >> row)
 	{
-		if (row > 2 && col > 2)
+		if (row > 2 && col > 2) // 8 19
 		{
 			break;
 		}

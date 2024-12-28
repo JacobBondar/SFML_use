@@ -6,12 +6,12 @@ class Buttom
 {
 public:
 	Buttom(std::string text, sf::Vector2f position);
-	sf::RectangleShape getButtom() const;
-	void setPicture();
 	sf::Sprite getPicture();
+	sf::Texture getTexture();
+	sf::Vector2f getPosition();
 
 private:
-	sf::RectangleShape m_buttom;
 	std::string m_type;
-	sf::Sprite picture;
+	sf::Sprite m_picture;
+	sf::Texture m_texturePicture;
 };
