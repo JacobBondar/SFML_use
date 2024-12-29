@@ -2,14 +2,14 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
-class Buttom
+class Button
 {
 public:
-	Buttom(std::string text, sf::Vector2f position);
+	Button(std::string text, sf::Vector2f position);
 	sf::Sprite getPicture();
-	sf::Texture getTexture();
 	sf::Vector2f getPosition();
 	sf::FloatRect getGlobalBounds();
+	char getType();
 
 private:
 	std::string m_type;

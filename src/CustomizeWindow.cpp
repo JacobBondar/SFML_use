@@ -1,14 +1,21 @@
 #include "CustomizeWindow.h"
-using std::ifstream;
 
-CustomizeWindow::CustomizeWindow(float col, float row)
-	: m_window(sf::VideoMode::getDesktopMode(), "Window"),
-	m_board(col * 100, row * 100)
+CustomizeWindow::CustomizeWindow()
+	: m_window(sf::VideoMode::getDesktopMode(), "Window")
 {
+	std::cout << "Enter col and row wanted for the board\n";
+
+	float row, col;
+	std::cin >> col >> row;
+
+	m_col = col;
+	m_row = row;
+	setTiles();
+	setButtons();
 	drawBoard();
 }
 
-void CustomizeWindow::setPictures()
+void CustomizeWindow::drawPictures()
 {
 	for (int pic = 0; pic < m_pictures.size(); pic++)
 	{
@@ -16,18 +23,49 @@ void CustomizeWindow::setPictures()
 	}
 }
 
-void CustomizeWindow::setBoard()
+void CustomizeWindow::drawButtons()
 {
-	sf::Vector2u windowPos = m_window.getSize();
-	sf::Vector2f fpoint = { (float)windowPos.x / 2, (float)windowPos.y / 2 + 10};
-	m_board.setOriginBoard();
-	m_board.setBoard(fpoint);
-	m_window.draw(m_board.getBoard());
+	for (int Button = 0; Button < m_buttons.size(); Button++)
+	{
+		m_window.draw(m_buttons[Button].getPicture());
+	}
 }
 
-void CustomizeWindow::setButtoms()
+void CustomizeWindow::drawTiles()
 {
-	ifstream file;
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			m_window.draw(m_board[row][col].getTile());
+		}
+	}
+}
+
+void CustomizeWindow::setTiles()
+{
+	sf::Vector2f point = { 200, 200 };
+	std::vector <Tile> rows;
+
+	for (int row = 0; row < m_row; row++)
+	{
+		rows.clear();
+		for (int col = 0; col < m_col; col++)
+		{
+			Tile newTile;
+			newTile.setTilePosition(point);
+			rows.push_back(newTile);
+			point.x += 100;
+		}
+		m_board.push_back(rows);
+		point.y += 100;
+		point.x = 200;
+	}
+}
+
+void CustomizeWindow::setButtons()
+{
+	std::ifstream file;
 	file.open("Toolbar.txt");
 	if (!file)
 	{
@@ -41,76 +79,71 @@ void CustomizeWindow::setButtoms()
 	while (file >> type)
 	{
 		typeName = type;
-		createButtom(typeName, pos);
+		createButton(typeName, pos);
 	}
 	file.close();
 
-	createButtom("Erase Object", pos);
-	createButtom("Clear Board", pos);
-	createButtom("Save Board", pos);
-
-	for (int buttom = 0; buttom < m_buttoms.size(); buttom++)
-	{
-		m_window.draw(m_buttoms[buttom].getPicture());
-	}
+	createButton("Erase Object", pos);
+	createButton("Clear Board", pos);
+	createButton("Save Board", pos);
 }
 
-void CustomizeWindow::createButtom(std::string typeName, sf::Vector2f &pos)
+void CustomizeWindow::createButton(std::string typeName, sf::Vector2f &pos)
 {
 	switch (typeName[0])
 	{
 	case '/':
 	{
-		Buttom newButtom("robot.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("robot.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case '!':
 	{
-		Buttom newButtom("guard.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("guard.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case '@':
 	{
-		Buttom newButtom("stone.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("stone.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case '#':
 	{
-		Buttom newButtom("wall.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("wall.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case 'D':
 	{
-		Buttom newButtom("door.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("door.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case 'E':
 	{
-		Buttom newButtom("eraser.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("eraser.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 	case 'C':
 	{
-		Buttom newButtom("clear.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("clear.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
 	case 'S':
 	{
-		Buttom newButtom("save.jpeg", pos);
-		m_buttoms.push_back(newButtom);
+		Button newButton("save.jpeg", pos);
+		m_buttons.push_back(newButton);
 		break;
 	}
 
@@ -120,7 +153,117 @@ void CustomizeWindow::createButtom(std::string typeName, sf::Vector2f &pos)
 	pos.x += 150;
 }
 
-void CustomizeWindow::setLines()
+bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked, 
+									  int& robotPosition, int& doorPosition)
+{
+	for (int button = 0; button < m_buttons.size(); button++)
+	{
+		if (m_buttons[button].getGlobalBounds().contains(pointClicked))
+		{
+			cellClicked = button;
+			if ('r' == m_buttons[button].getType())
+			{
+				robotPosition = button;
+			}
+
+			if ('d' == m_buttons[button].getType())
+			{
+				doorPosition = button;
+			}
+
+			return true;
+		}
+	}
+	return false;
+}
+
+void CustomizeWindow::placePicture(sf::Vector2f pointClicked, int cellClicked)
+{
+	sf::Sprite picture = m_buttons[cellClicked].getPicture();
+	picture.setPosition(pointClicked);
+	m_pictures.push_back(picture);
+}
+
+void CustomizeWindow::drawBoard()
+{
+	m_window.clear(); // To ensure the window is default
+
+	drawTiles();
+	drawPictures();
+	drawButtons();
+	
+
+	m_window.display();
+}
+
+bool CustomizeWindow::isWindowOpen()
+{
+	return m_window.isOpen();
+}
+
+bool CustomizeWindow::isEvent(sf::Event& event)
+{
+	return m_window.waitEvent(event);
+}
+
+void CustomizeWindow::closeWindow()
+{
+	m_window.close();
+}
+
+void CustomizeWindow::mouseClicked(const sf::Event event, int &cellClicked,
+								   int & robotPosition, int& doorPosition)
+{
+	auto pointClicked = m_window.mapPixelToCoords(
+		{ event.mouseButton.x, event.mouseButton.y });
+
+	if (clickedOnButton(pointClicked, cellClicked, robotPosition, doorPosition)) {}
+
+	else if (cellClicked >= 0)
+	{
+		if (clickedOnTile(pointClicked))
+		{
+			if (cellClicked == robotPosition)
+			{
+				robotPosition = -1;
+			}
+
+			else if (cellClicked == doorPosition)
+			{
+				doorPosition = -1;
+			}
+
+			placePicture(pointClicked, cellClicked);
+			drawBoard();
+		}
+	}
+}
+
+bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked)
+{
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			if (m_board[row][col].doesContain(pointClicked))
+			{
+				for (int pic = 0; pic < m_pictures.size(); pic++)
+				{
+					if (m_pictures[pic].getGlobalBounds().contains(pointClicked))
+					{
+						m_pictures.erase(m_pictures.begin() + pic);
+					}
+				}
+				pointClicked = m_board[row][col].getPosition();
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+
+/*void CustomizeWindow::setLines()
 {
 	sf::Vector2f size = m_board.getSize();
 	sf::Vector2f pointStart = findTopLeft();
@@ -169,75 +312,4 @@ sf::Vector2f CustomizeWindow::findTopLeft()
 
 	return pointStart;
 }
-
-void CustomizeWindow::run()
-{
-	auto event = sf::Event{};
-	int cellClicked = -1;
-
-	while (m_window.isOpen())
-	{
-		if (m_window.waitEvent(event))
-		{
-			switch (event.type)
-			{
-				case sf::Event::Closed:
-				{
-					m_window.close();
-					break;
-				}
-				case sf::Event::MouseButtonReleased:
-				{
-					auto location = m_window.mapPixelToCoords(
-						{ event.mouseButton.x, event.mouseButton.y });
-
-					if (clickedOnButton(location, cellClicked)){}
-
-					else if(cellClicked >= 0)
-					{
-						placePicture(location, cellClicked);
-						drawBoard();
-					}
-
-					break;
-				}
-			}
-		}
-	}
-}
-
-bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked)
-{
-	for (int button = 0; button < m_buttoms.size(); button++)
-	{
-		if (m_buttoms[button].getGlobalBounds().contains(pointClicked))
-		{
-			cellClicked = button;
-			return true;
-		}
-	}
-
-	return false;
-}
-
-void CustomizeWindow::placePicture(sf::Vector2f location, int cellClicked)
-{
-	sf::Sprite picture = m_buttoms[cellClicked].getPicture();
-	//sf::Sprite picture(m_buttoms[cellClicked].getTexture());
-
-	picture.setOrigin(sf::Vector2f(picture.getTexture()->getSize() / 2u));
-	picture.setPosition(location);
-	m_pictures.push_back(picture);
-}
-
-void CustomizeWindow::drawBoard()
-{
-	m_window.clear(); // To ensure the window is default
-
-	setBoard();
-	setButtoms();
-	setLines();
-	setPictures();
-	
-	m_window.display();
-}
+*/
