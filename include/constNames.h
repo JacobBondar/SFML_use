@@ -24,6 +24,7 @@ const char WALLTYPE = '#';
 const char STONETYPE = '@';
 
 const int SIZEOFPICTURE = 50;
+const int SPACEBUTTONS = 150;
 
 const sf::Vector2f STARTPOINTTILE = { 50, 150 };
 const sf::Vector2f STARTPOINTBUTTONS = { 10, 10 };

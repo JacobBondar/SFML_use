@@ -13,16 +13,18 @@ CustomizeWindow::CustomizeWindow()
 	
 	else
 	{
-		std::cout <<"Enter 1 <= col <= 33 and 1 <= row <= 15 wanted for the board\n";
+		std::cout << "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted" 
+			<< " for the board\n";
 		while (std::cin >> m_col >> m_row)
 		{
 			
-			if ((m_col <= 33 && m_row <= 15) && (m_col >= 1 && m_row >= 1))
+			if (m_col <= 33 && m_row <= 15 && m_col >= 1 && m_row >= 1)
 			{
 				break;
 			}
 			std::cout << "Enter valid parameters for col and row\n"
-				<< "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted for the board\n";
+				<< "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted" 
+				<< " for the board\n";
 		}
 
 		m_boardFile.open(BOARDNAME, 
@@ -59,7 +61,7 @@ void CustomizeWindow::updateValues()
 
 //-----------------------------------------------------------------------------
 
-std::string CustomizeWindow::findTypeCharToName(char type)
+std::string CustomizeWindow::findTypeCharToName(char type) const
 {
 	switch (type)
 	{
@@ -217,7 +219,9 @@ void CustomizeWindow::setButtons()
 	createButton(SAVENAME, pos);
 }
 
-std::string CustomizeWindow::findCharacter(char type)
+//-----------------------------------------------------------------------------
+
+std::string CustomizeWindow::findCharacter(char type) const
 {
 	switch (type)
 	{
@@ -249,15 +253,21 @@ std::string CustomizeWindow::findCharacter(char type)
 	return SPACENAME;
 }
 
-void CustomizeWindow::createButton(std::string typeName, sf::Vector2f &pos)
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::createButton(const std::string typeName, 
+								   sf::Vector2f &pos)
 {
 	Button newButton(typeName, pos);
 	m_buttons.push_back(newButton);
 
-	pos.x += 150;
+	pos.x += SPACEBUTTONS;
 }
 
-bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked)
+//-----------------------------------------------------------------------------
+
+bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, 
+									  int &cellClicked) const
 {
 	for (int button = 0; button < m_buttons.size(); button++)
 	{
@@ -270,28 +280,35 @@ bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicke
 	return false;
 }
 
-void CustomizeWindow::validCharacters(sf::Vector2f pointClicked, int buttonClicked)
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::validCharacters(sf::Vector2f pointClicked, 
+									  int buttonClicked)
 {
-	for (int i = 0; i < m_row; i++)
+	for (int row = 0; row < m_row; row++)
 	{
-		for (int j = 0; j < m_col; j++)
+		for (int col = 0; col < m_col; col++)
 		{
-			if (m_board[i][j].doesContain(pointClicked))
+			if (m_board[row][col].doesContain(pointClicked))
 			{
 				continue;
 			}
 
-			if (m_board[i][j].getType() == m_buttons[buttonClicked].getType())
+			if (m_board[row][col].getType() == 
+				m_buttons[buttonClicked].getType())
 			{
-				if (m_board[i][j].getType() == ROBOTNAME || m_board[i][j].getType() == DOORNAME)
+				if (m_board[row][col].getType() == ROBOTNAME ||
+					m_board[row][col].getType() == DOORNAME)
 				{
-					m_board[i][j].setType(SPACENAME);
-					m_board[i][j].resetPicture();
+					m_board[row][col].setType(SPACENAME);
+					m_board[row][col].resetPicture();
 				}
 			}
 		}
 	}
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::drawBoard()
 {
@@ -303,20 +320,28 @@ void CustomizeWindow::drawBoard()
 	m_window.display();
 }
 
-bool CustomizeWindow::isWindowOpen()
+//-----------------------------------------------------------------------------
+
+bool CustomizeWindow::isWindowOpen() const
 {
 	return m_window.isOpen();
 }
+
+//-----------------------------------------------------------------------------
 
 bool CustomizeWindow::isEvent(sf::Event& event)
 {
 	return m_window.waitEvent(event);
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::closeWindow()
 {
 	m_window.close();
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 {
@@ -332,7 +357,7 @@ void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 		else
 		{
 			sf::Vector2i wantedTile;
-			bool onTile = clickedOnTile(pointClicked, buttonClicked, wantedTile);
+			bool onTile = clickedOnTile(pointClicked,buttonClicked,wantedTile);
 
 			if (onTile)
 			{
@@ -349,7 +374,10 @@ void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 	}
 }
 
-bool CustomizeWindow::pressedOnErase(sf::Vector2f pointClicked, int buttonClicked, sf::Vector2i wantedTile)
+//-----------------------------------------------------------------------------
+
+bool CustomizeWindow::pressedOnErase(sf::Vector2f pointClicked, 
+									int buttonClicked, sf::Vector2i wantedTile)
 {
 	if (m_buttons[buttonClicked].getType() != ERASERNAME)
 	{
@@ -360,20 +388,20 @@ bool CustomizeWindow::pressedOnErase(sf::Vector2f pointClicked, int buttonClicke
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::clearBoard()
 {
 	for (int row = 0; row < m_row; row++)
 	{
 		for (int col = 0; col < m_col; col++)
 		{
-			if (m_board[row][col].getType() != SPACENAME)
-			{
-				m_board[row][col].resetPicture();
-				m_board[row][col].setType(SPACENAME);
-			}
+			checkTile(row, col);
 		}
 	}
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::eraseObject(sf::Vector2f pointClicked)
 {
@@ -383,25 +411,38 @@ void CustomizeWindow::eraseObject(sf::Vector2f pointClicked)
 		{
 			if (m_board[row][col].doesContain(pointClicked))
 			{
-				if (m_board[row][col].getType() != SPACENAME)
-				{
-					m_board[row][col].resetPicture();
-					m_board[row][col].setType(SPACENAME);
-				}
+				checkTile(row, col);
 			}
 		}
 	}
 }
 
-void CustomizeWindow::placePicture(sf::Vector2f& pointClicked, int buttonClicked, sf::Vector2i wantedTile)
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::checkTile(int row, int col)
+{
+	if (m_board[row][col].getType() != SPACENAME)
+	{
+		m_board[row][col].resetPicture();
+		m_board[row][col].setType(SPACENAME);
+	}
+}
+
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::placePicture(sf::Vector2f& pointClicked, 
+								   int buttonClicked, sf::Vector2i wantedTile)
 {
 	sf::Sprite picture = m_buttons[buttonClicked].getPicture();
 
 	pointClicked = m_board[wantedTile.y][wantedTile.x].getPosition();
-	m_board[wantedTile.y][wantedTile.x].setType(m_buttons[buttonClicked].getType());
+	m_board[wantedTile.y][wantedTile.x].setType(
+										m_buttons[buttonClicked].getType());
 	m_board[wantedTile.y][wantedTile.x].setPicture(picture);
 	m_board[wantedTile.y][wantedTile.x].setPicturePosition(pointClicked);
 }
+
+//-----------------------------------------------------------------------------
 
 bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
 {
@@ -425,6 +466,8 @@ bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
 	return true;
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::saveBoard()
 {
 	m_boardFile.clear();
@@ -444,7 +487,9 @@ void CustomizeWindow::saveBoard()
 	printAfterSave();
 }
 
-char CustomizeWindow::findTypeNameToChar(std::string typeName)
+//-----------------------------------------------------------------------------
+
+char CustomizeWindow::findTypeNameToChar(const std::string typeName) const
 {
 	if (typeName == ROBOTNAME)
 	{
@@ -474,7 +519,10 @@ char CustomizeWindow::findTypeNameToChar(std::string typeName)
 	return SPACETYPE;
 }
 
-bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, int buttonClicked, sf::Vector2i &wantedTile)
+//-----------------------------------------------------------------------------
+
+bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, 
+							int buttonClicked, sf::Vector2i &wantedTile) const
 {
 	for (int row = 0; row < m_row; row++)
 	{
@@ -490,6 +538,8 @@ bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, int buttonClicke
 	}
 	return false;
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::closeFile()
 {

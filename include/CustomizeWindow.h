@@ -17,7 +17,7 @@ class CustomizeWindow
 public:
 	CustomizeWindow();
 	void mouseClicked(const sf::Event &event, int& cellClicked);
-	bool isWindowOpen();
+	bool isWindowOpen() const;
 	bool isEvent(sf::Event &event);
 	void closeWindow();
 	void closeFile();
@@ -35,11 +35,11 @@ private:
 	void setFromFile();
 	void setButtons();
 	
-	void createButton(std::string typeName, sf::Vector2f &pos);
-	bool clickedOnButton(sf::Vector2f pointClicked, int& cellClicked);
+	void createButton(const std::string typeName, sf::Vector2f &pos);
+	bool clickedOnButton(sf::Vector2f pointClicked, int& cellClicked) const;
 	void validCharacters(sf::Vector2f pointClicked, int cellClicked);
 	bool clickedOnTile(sf::Vector2f &pointClicked, int buttonClicked, 
-					   sf::Vector2i &wantedTile);
+					   sf::Vector2i &wantedTile) const;
 	void drawButtons();
 	void drawTiles();
 	bool pressedOnErase(sf::Vector2f pointClicked, int buttonClicked, 
@@ -51,8 +51,9 @@ private:
 	bool CheckImmediateResponse(int buttonClicked);
 	void saveBoard();
 	void updateValues();
-	std::string findCharacter(char type);
-	char findTypeNameToChar(std::string typeName);
-	std::string findTypeCharToName(char type);
+	std::string findCharacter(char type) const;
+	char findTypeNameToChar(const std::string typeName) const;
+	std::string findTypeCharToName(char type) const;
 	void printAfterSave();
+	void checkTile(int row, int col);
 };
