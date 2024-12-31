@@ -2,27 +2,29 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
-#include "constNames.h"
+#include "ConstNames.h"
 
 class Tile
 {
 public:
 	Tile();
-	sf::RectangleShape getTile();
-	void setType(std::string type);
-	std::string getType();
+	sf::RectangleShape getTile() const;
+	sf::Vector2f getSize() const;
+	sf::Vector2f getPosition() const;
+	std::string getType() const;
+	sf::Vector2f getTilePosition() const;
+	sf::Sprite getPicture() const;
+
+	void setType(const std::string type);
 	void setTilePosition(sf::Vector2f point);
-	sf::Vector2f getTilePosition();
 	void setPicturePosition(sf::Vector2f point);
 	void setOriginTile();
-	sf::Vector2f getSize();
-	sf::Vector2f getPosition();
-	bool doesContain(sf::Vector2f pointClicked);
-	sf::Sprite getPicture();
-	void setPicture(sf::Sprite picture);
-	void resetPicture();
+	void setPicture(const sf::Sprite picture);
 	void setAfterSave();
 	void setToDefault();
+
+	bool doesContain(sf::Vector2f pointClicked) const;
+	void resetPicture();
 	void draw(sf::RenderWindow &window) const;
 
 private:

@@ -1,4 +1,5 @@
 #pragma once
+#include <SFML/Graphics.hpp>
 #include <string>
 
 const std::string WINDOWNAME = "Window";
@@ -13,7 +14,6 @@ const std::string WALLNAME = "wall.jpg";
 const std::string CLEARNAME = "clear.jpg";
 const std::string SAVENAME = "save.jpg";
 const std::string ERASERNAME = "eraser.jpg";
-const std::string SAVEDPICTURENAME = "savedsuccesfully.jpg";
 const std::string SPACENAME = " ";
 
 const char SPACETYPE = ' ';
@@ -24,3 +24,6 @@ const char WALLTYPE = '#';
 const char STONETYPE = '@';
 
 const int SIZEOFPICTURE = 50;
+
+const sf::Vector2f STARTPOINTTILE = { 50, 150 };
+const sf::Vector2f STARTPOINTBUTTONS = { 10, 10 };

@@ -1,30 +1,32 @@
 #include "CustomizeWindow.h"
 
+//-----------------------------------------------------------------------------
+
 CustomizeWindow::CustomizeWindow()
 	: m_window(sf::VideoMode::getDesktopMode(), WINDOWNAME), m_row(0), m_col(0)
 {
 	m_boardFile.open(BOARDNAME, std::ios::out | std::ios::in);
-
-	if (m_boardFile)
+	if (m_boardFile) // file exists
 	{
 		updateValues();
 	}
 	
 	else
 	{
-		std::cout << "Enter col <= 31 and row <= 14 wanted for the board\n";
+		std::cout <<"Enter 1 <= col <= 33 and 1 <= row <= 15 wanted for the board\n";
 		while (std::cin >> m_col >> m_row)
 		{
 			
-			if ((m_col <= 31 || m_row <= 14) && (m_col >= 1 || m_row >= 1))
+			if ((m_col <= 33 && m_row <= 15) && (m_col >= 1 && m_row >= 1))
 			{
 				break;
 			}
 			std::cout << "Enter valid parameters for col and row\n"
-				<< "Enter col <= 31 and row <= 14 wanted for the board\n";
+				<< "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted for the board\n";
 		}
 
-		m_boardFile.open(BOARDNAME, std::ios::out | std::ios::in | std::ios::trunc);
+		m_boardFile.open(BOARDNAME, 
+						 std::ios::out | std::ios::in | std::ios::trunc);
 		if (!m_boardFile)
 		{
 			std::cerr << "Can't open the board\n";
@@ -39,6 +41,8 @@ CustomizeWindow::CustomizeWindow()
 	drawBoard();
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::updateValues()
 {
 	std::string line;
@@ -52,6 +56,8 @@ void CustomizeWindow::updateValues()
 		}
 	}
 }
+
+//-----------------------------------------------------------------------------
 
 std::string CustomizeWindow::findTypeCharToName(char type)
 {
@@ -85,7 +91,9 @@ std::string CustomizeWindow::findTypeCharToName(char type)
 	return SPACENAME;
 }
 
-void CustomizeWindow::printAfterWin()
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::printAfterSave()
 {
 	for (int row = 0; row < m_row; row++)
 	{
@@ -101,6 +109,8 @@ void CustomizeWindow::printAfterWin()
 	std::this_thread::sleep_for(2000ms);
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::drawButtons()
 {
 	for (int index = 0; index < m_buttons.size(); index++)
@@ -108,6 +118,8 @@ void CustomizeWindow::drawButtons()
 		m_buttons[index].draw(m_window);
 	}
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::drawTiles()
 {
@@ -120,9 +132,11 @@ void CustomizeWindow::drawTiles()
 	}
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::setTiles()
 {
-	sf::Vector2f point = { 50, 150 };
+	sf::Vector2f point = STARTPOINTTILE;
 	std::vector <Tile> rows;
 
 	for (int row = 0; row < m_row; row++)
@@ -133,13 +147,15 @@ void CustomizeWindow::setTiles()
 			Tile newTile;
 			newTile.setTilePosition(point);
 			rows.push_back(newTile);
-			point.x += 60;
+			point.x += 55;
 		}
 		m_board.push_back(rows);
-		point.y += 60;
+		point.y += 55;
 		point.x = 50;
 	}
 }
+
+//-----------------------------------------------------------------------------
 
 void CustomizeWindow::setFromFile()
 {
@@ -173,6 +189,8 @@ void CustomizeWindow::setFromFile()
 	}
 }
 
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::setButtons()
 {
 	std::ifstream file;
@@ -185,7 +203,7 @@ void CustomizeWindow::setButtons()
 
 	char type;
 	std::string typeName;
-	sf::Vector2f pos = { 10, 10 };
+	sf::Vector2f pos = STARTPOINTBUTTONS;
 	while (file >> type)
 	{
 		typeName = findCharacter(type);
@@ -423,7 +441,7 @@ void CustomizeWindow::saveBoard()
 	}
 	m_boardFile.flush();
 
-	printAfterWin();
+	printAfterSave();
 }
 
 char CustomizeWindow::findTypeNameToChar(std::string typeName)

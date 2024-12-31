@@ -5,12 +5,12 @@
 class Button
 {
 public:
-	Button(std::string text, sf::Vector2f position);
-	sf::Vector2f getPosition();
-	sf::FloatRect getGlobalBounds();
-	std::string getType();
-	void draw(sf::RenderWindow& window);
-	sf::Sprite getPicture();
+	Button(const std::string text, sf::Vector2f position);
+	sf::Vector2f getPosition() const;
+	sf::FloatRect getGlobalBounds() const;
+	std::string getType() const;
+	sf::Sprite getPicture() const;
+	void draw(sf::RenderWindow& window) const;
 
 private:
 	sf::Texture m_texturePicture;
