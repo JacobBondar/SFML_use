@@ -12,6 +12,4 @@ public:
 
 private:
 	CustomizeWindow m_paint;
-	void draw();
-
 };

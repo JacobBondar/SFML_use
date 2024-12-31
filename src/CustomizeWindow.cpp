@@ -1,25 +1,104 @@
 #include "CustomizeWindow.h"
 
 CustomizeWindow::CustomizeWindow()
-	: m_window(sf::VideoMode::getDesktopMode(), "Window")
+	: m_window(sf::VideoMode::getDesktopMode(), WINDOWNAME), m_row(0), m_col(0)
 {
-	std::ifstream checkBoard("board.txt");
+	m_boardFile.open(BOARDNAME, std::ios::out | std::ios::in);
 
-	if (!checkBoard)
+	if (m_boardFile)
 	{
-		std::cout << "Enter col and row wanted for the board\n";
+		updateValues();
+	}
+	
+	else
+	{
+		std::cout << "Enter col <= 31 and row <= 14 wanted for the board\n";
+		while (std::cin >> m_col >> m_row)
+		{
+			
+			if ((m_col <= 31 || m_row <= 14) && (m_col >= 1 || m_row >= 1))
+			{
+				break;
+			}
+			std::cout << "Enter valid parameters for col and row\n"
+				<< "Enter col <= 31 and row <= 14 wanted for the board\n";
+		}
 
-		float row, col;
-		std::cin >> col >> row;
-		m_col = col;
-		m_row = row;
+		m_boardFile.open(BOARDNAME, std::ios::out | std::ios::in | std::ios::trunc);
+		if (!m_boardFile)
+		{
+			std::cerr << "Can't open the board\n";
+			exit(EXIT_FAILURE);
+		}
 	}
 
-	std::ofstream board("resources/board.txt");
-	
-	setTiles();
 	setButtons();
+	setTiles();
+	setFromFile();
+
 	drawBoard();
+}
+
+void CustomizeWindow::updateValues()
+{
+	std::string line;
+	while (std::getline(m_boardFile, line))
+	{
+		m_row++;
+
+		if (m_col < line.length())
+		{
+			m_col = line.length();
+		}
+	}
+}
+
+std::string CustomizeWindow::findTypeCharToName(char type)
+{
+	switch (type)
+	{
+		case ROBOTTYPE:
+		{
+			return ROBOTNAME;
+		}
+
+		case GUARDTYPE:
+		{
+			return GUARDNAME;
+		}
+
+		case STONETYPE:
+		{
+			return STONENAME;
+		}
+
+		case WALLTYPE:
+		{
+			return WALLNAME;
+		}
+
+		case DOORTYPE:
+		{
+			return DOORNAME;
+		}
+	}
+	return SPACENAME;
+}
+
+void CustomizeWindow::printAfterWin()
+{
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			m_board[row][col].setAfterSave();
+			m_board[row][col].draw(m_window);
+			m_board[row][col].setToDefault();
+		}
+	}
+	drawButtons();
+	m_window.display();
+	std::this_thread::sleep_for(2000ms);
 }
 
 void CustomizeWindow::drawButtons()
@@ -54,18 +133,50 @@ void CustomizeWindow::setTiles()
 			Tile newTile;
 			newTile.setTilePosition(point);
 			rows.push_back(newTile);
-			point.x += 110;
+			point.x += 60;
 		}
 		m_board.push_back(rows);
-		point.y += 110;
+		point.y += 60;
 		point.x = 50;
+	}
+}
+
+void CustomizeWindow::setFromFile()
+{
+	int row = 0, col = 0;
+	char type;
+	std::string typeName;
+	m_boardFile.clear();
+	m_boardFile.seekp(0, std::ios::beg);
+
+	while (m_boardFile.get(type))
+	{
+		if (type == '\n')
+		{
+			row++;
+			col = 0;
+			continue;
+		}
+
+		typeName = findTypeCharToName(type);
+		m_board[row][col].setType(typeName);
+		for (int button = 0; button < m_buttons.size(); button++)
+		{
+			if (typeName == m_buttons[button].getType())
+			{
+				m_board[row][col].setPicture(m_buttons[button].getPicture());
+				m_board[row][col].setPicturePosition(m_board[row][col].getTilePosition());
+				break;
+			}
+		}
+		col++;
 	}
 }
 
 void CustomizeWindow::setButtons()
 {
 	std::ifstream file;
-	file.open("Toolbar.txt");
+	file.open(TOOLBAR);
 	if (!file)
 	{
 		std::cerr << "Can't open the Toolbar file\n";
@@ -77,78 +188,54 @@ void CustomizeWindow::setButtons()
 	sf::Vector2f pos = { 10, 10 };
 	while (file >> type)
 	{
-		typeName = type;
+		typeName = findCharacter(type);
+
 		createButton(typeName, pos);
 	}
 	file.close();
 
-	createButton("Erase Object", pos);
-	createButton("Clear Board", pos);
-	createButton("Save Board", pos);
+	createButton(ERASERNAME, pos);
+	createButton(CLEARNAME, pos);
+	createButton(SAVENAME, pos);
+}
+
+std::string CustomizeWindow::findCharacter(char type)
+{
+	switch (type)
+	{
+		case ROBOTTYPE:
+		{
+			return ROBOTNAME;
+		}
+
+		case GUARDTYPE:
+		{
+			return GUARDNAME;
+		}
+
+		case STONETYPE:
+		{
+			return STONENAME;
+		}
+
+		case WALLTYPE:
+		{
+			return WALLNAME;
+		}
+
+		case DOORTYPE:
+		{
+			return DOORNAME;
+		}
+	}
+	return SPACENAME;
 }
 
 void CustomizeWindow::createButton(std::string typeName, sf::Vector2f &pos)
 {
-	switch (typeName[0])
-	{
-	case '/':
-	{
-		Button newButton("robot.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
+	Button newButton(typeName, pos);
+	m_buttons.push_back(newButton);
 
-	case '!':
-	{
-		Button newButton("guard.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	case '@':
-	{
-		Button newButton("stone.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	case '#':
-	{
-		Button newButton("wall.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	case 'D':
-	{
-		Button newButton("door.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	case 'E':
-	{
-		Button newButton("eraser.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-	case 'C':
-	{
-		Button newButton("clear.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	case 'S':
-	{
-		Button newButton("boardSave.jpeg", pos);
-		m_buttons.push_back(newButton);
-		break;
-	}
-
-	default:
-		break;
-	}
 	pos.x += 150;
 }
 
@@ -178,10 +265,9 @@ void CustomizeWindow::validCharacters(sf::Vector2f pointClicked, int buttonClick
 
 			if (m_board[i][j].getType() == m_buttons[buttonClicked].getType())
 			{
-				if (m_board[i][j].getType() == 'r' || m_board[i][j].getType() == 'd')
+				if (m_board[i][j].getType() == ROBOTNAME || m_board[i][j].getType() == DOORNAME)
 				{
-					std::cout << "here\n";
-					m_board[i][j].setType('0');
+					m_board[i][j].setType(SPACENAME);
 					m_board[i][j].resetPicture();
 				}
 			}
@@ -192,7 +278,7 @@ void CustomizeWindow::validCharacters(sf::Vector2f pointClicked, int buttonClick
 void CustomizeWindow::drawBoard()
 {
 	m_window.clear(); // To ensure the window is default
-
+	
 	drawTiles();
 	drawButtons();
 
@@ -247,7 +333,7 @@ void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 
 bool CustomizeWindow::pressedOnErase(sf::Vector2f pointClicked, int buttonClicked, sf::Vector2i wantedTile)
 {
-	if (m_buttons[buttonClicked].getType() != 'e')
+	if (m_buttons[buttonClicked].getType() != ERASERNAME)
 	{
 		return false;
 	}
@@ -262,10 +348,10 @@ void CustomizeWindow::clearBoard()
 	{
 		for (int col = 0; col < m_col; col++)
 		{
-			if (m_board[row][col].getType() != '0')
+			if (m_board[row][col].getType() != SPACENAME)
 			{
 				m_board[row][col].resetPicture();
-				m_board[row][col].setType('0');
+				m_board[row][col].setType(SPACENAME);
 			}
 		}
 	}
@@ -279,10 +365,10 @@ void CustomizeWindow::eraseObject(sf::Vector2f pointClicked)
 		{
 			if (m_board[row][col].doesContain(pointClicked))
 			{
-				if (m_board[row][col].getType() != '0')
+				if (m_board[row][col].getType() != SPACENAME)
 				{
 					m_board[row][col].resetPicture();
-					m_board[row][col].setType('0');
+					m_board[row][col].setType(SPACENAME);
 				}
 			}
 		}
@@ -301,31 +387,73 @@ void CustomizeWindow::placePicture(sf::Vector2f& pointClicked, int buttonClicked
 
 bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
 {
-	switch (m_buttons[buttonClicked].getType())
+	std::string gotText = m_buttons[buttonClicked].getType();
+
+	if (gotText == SAVENAME)
 	{
-		case 'b':
-		{
-			saveBoard();
-			break;
-		}
+		saveBoard();
+	}
 
-		case 'c':
-		{
-			clearBoard();
-			break;
-		}
+	else if (gotText == CLEARNAME)
+	{
+		clearBoard();
+	}
 
-		default:
-		{
-			return false;
-		}
+	else
+	{
+		return false;
 	}
 	drawBoard();
 	return true;
 }
 
-void CustomizeWindow::saveBoard() // do yay
+void CustomizeWindow::saveBoard()
 {
+	m_boardFile.clear();
+	m_boardFile.seekp(0, std::ios::beg);
+
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			char type = findTypeNameToChar(m_board[row][col].getType());
+			m_boardFile << type;
+		}
+		m_boardFile << '\n';
+	}
+	m_boardFile.flush();
+
+	printAfterWin();
+}
+
+char CustomizeWindow::findTypeNameToChar(std::string typeName)
+{
+	if (typeName == ROBOTNAME)
+	{
+		return ROBOTTYPE;
+	}
+
+	else if (typeName == GUARDNAME)
+	{
+		return GUARDTYPE;
+	}
+
+	else if (typeName == STONENAME)
+	{
+		return STONETYPE;
+	}
+
+	else if (typeName == WALLNAME)
+	{
+		return WALLTYPE;
+	}
+
+	else if (typeName == DOORNAME)
+	{
+		return DOORTYPE;
+	}
+
+	return SPACETYPE;
 }
 
 bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, int buttonClicked, sf::Vector2i &wantedTile)
@@ -345,54 +473,7 @@ bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, int buttonClicke
 	return false;
 }
 
-
-/*void CustomizeWindow::setLines()
+void CustomizeWindow::closeFile()
 {
-	sf::Vector2f size = m_board.getSize();
-	sf::Vector2f pointStart = findTopLeft();
-
-	sf::Vector2f temp = pointStart;
-	sf::Vector2f pointEnd;
-
-	std::vector <sf::Vertex> lines; //odd - start, even - end. 0-1, 2-3, 4-5
-
-	for (float hori = 0; hori <= m_board.getTable().x / 100; hori++, temp.x += 100)
-	{
-		lines.push_back(temp);
-		pointEnd = temp;
-		pointEnd.y += size.y;
-
-		lines.push_back(pointEnd);
-	}
-	
-	temp = pointStart;
-	for (float vert = 0; vert <= m_board.getTable().y / 100; vert++, temp.y += 100)
-	{
-		lines.push_back(temp);
-		pointEnd = temp;
-		pointEnd.x += size.x;
-
-		lines.push_back(pointEnd);
-	}
-
-	for (int cell = 0; cell < lines.size(); cell += 2)
-	{
-		sf::Vertex line2[] = 
-		{
-			lines[cell], // Start point
-			lines[cell + 1] // End point
-		};
-		m_window.draw(line2, 2, sf::Lines);
-	}
+	m_boardFile.close();
 }
-
-sf::Vector2f CustomizeWindow::findTopLeft()
-{
-	sf::Vector2f pointStart = m_board.getPosition();
-	sf::Vector2f length = m_board.getSize();
-	pointStart.x -= length.x / 2;
-	pointStart.y -= length.y / 2;
-
-	return pointStart;
-}
-*/

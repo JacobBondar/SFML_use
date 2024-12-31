@@ -8,7 +8,7 @@ public:
 	Button(std::string text, sf::Vector2f position);
 	sf::Vector2f getPosition();
 	sf::FloatRect getGlobalBounds();
-	char getType();
+	std::string getType();
 	void draw(sf::RenderWindow& window);
 	sf::Sprite getPicture();
 

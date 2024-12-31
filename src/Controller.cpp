@@ -1,6 +1,6 @@
 #include "Controller.h"
 
-Controller::Controller(){}
+Controller::Controller() {}
 
 void Controller::run()
 {
@@ -16,12 +16,12 @@ void Controller::run()
 				case sf::Event::Closed:
 				{
 					m_paint.closeWindow();
+					m_paint.closeFile();
 					break;
 				}
 				case sf::Event::MouseButtonReleased:
 				{
 					m_paint.mouseClicked(event, cellClicked);
-
 					break;
 				}
 			}

@@ -18,9 +18,12 @@ sf::FloatRect Button::getGlobalBounds() // maybe look for another way
 	return picture.getGlobalBounds();
 }
 
-char Button::getType()
+std::string Button::getType()
 {
-	return m_type[0]; // return first letter only
+	std::string tempString;
+	tempString = m_type; // preforms deep copy
+
+	return tempString; // return first letter only
 }
 
 void Button::draw(sf::RenderWindow &window)
