@@ -3,31 +3,30 @@
 CustomizeWindow::CustomizeWindow()
 	: m_window(sf::VideoMode::getDesktopMode(), "Window")
 {
-	std::cout << "Enter col and row wanted for the board\n";
+	std::ifstream checkBoard("board.txt");
 
-	float row, col;
-	std::cin >> col >> row;
+	if (!checkBoard)
+	{
+		std::cout << "Enter col and row wanted for the board\n";
 
-	m_col = col;
-	m_row = row;
+		float row, col;
+		std::cin >> col >> row;
+		m_col = col;
+		m_row = row;
+	}
+
+	std::ofstream board("resources/board.txt");
+	
 	setTiles();
 	setButtons();
 	drawBoard();
 }
 
-void CustomizeWindow::drawPictures()
-{
-	for (int pic = 0; pic < m_pictures.size(); pic++)
-	{
-		m_window.draw(m_pictures[pic]);
-	}
-}
-
 void CustomizeWindow::drawButtons()
 {
-	for (int Button = 0; Button < m_buttons.size(); Button++)
+	for (int index = 0; index < m_buttons.size(); index++)
 	{
-		m_window.draw(m_buttons[Button].getPicture());
+		m_buttons[index].draw(m_window);
 	}
 }
 
@@ -37,14 +36,14 @@ void CustomizeWindow::drawTiles()
 	{
 		for (int col = 0; col < m_col; col++)
 		{
-			m_window.draw(m_board[row][col].getTile());
+			m_board[row][col].draw(m_window);
 		}
 	}
 }
 
 void CustomizeWindow::setTiles()
 {
-	sf::Vector2f point = { 200, 200 };
+	sf::Vector2f point = { 50, 150 };
 	std::vector <Tile> rows;
 
 	for (int row = 0; row < m_row; row++)
@@ -55,11 +54,11 @@ void CustomizeWindow::setTiles()
 			Tile newTile;
 			newTile.setTilePosition(point);
 			rows.push_back(newTile);
-			point.x += 100;
+			point.x += 110;
 		}
 		m_board.push_back(rows);
-		point.y += 100;
-		point.x = 200;
+		point.y += 110;
+		point.x = 50;
 	}
 }
 
@@ -142,7 +141,7 @@ void CustomizeWindow::createButton(std::string typeName, sf::Vector2f &pos)
 
 	case 'S':
 	{
-		Button newButton("save.jpeg", pos);
+		Button newButton("boardSave.jpeg", pos);
 		m_buttons.push_back(newButton);
 		break;
 	}
@@ -153,35 +152,41 @@ void CustomizeWindow::createButton(std::string typeName, sf::Vector2f &pos)
 	pos.x += 150;
 }
 
-bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked, 
-									  int& robotPosition, int& doorPosition)
+bool CustomizeWindow::clickedOnButton(sf::Vector2f pointClicked, int &cellClicked)
 {
 	for (int button = 0; button < m_buttons.size(); button++)
 	{
 		if (m_buttons[button].getGlobalBounds().contains(pointClicked))
 		{
 			cellClicked = button;
-			if ('r' == m_buttons[button].getType())
-			{
-				robotPosition = button;
-			}
-
-			if ('d' == m_buttons[button].getType())
-			{
-				doorPosition = button;
-			}
-
 			return true;
 		}
 	}
 	return false;
 }
 
-void CustomizeWindow::placePicture(sf::Vector2f pointClicked, int cellClicked)
+void CustomizeWindow::validCharacters(sf::Vector2f pointClicked, int buttonClicked)
 {
-	sf::Sprite picture = m_buttons[cellClicked].getPicture();
-	picture.setPosition(pointClicked);
-	m_pictures.push_back(picture);
+	for (int i = 0; i < m_row; i++)
+	{
+		for (int j = 0; j < m_col; j++)
+		{
+			if (m_board[i][j].doesContain(pointClicked))
+			{
+				continue;
+			}
+
+			if (m_board[i][j].getType() == m_buttons[buttonClicked].getType())
+			{
+				if (m_board[i][j].getType() == 'r' || m_board[i][j].getType() == 'd')
+				{
+					std::cout << "here\n";
+					m_board[i][j].setType('0');
+					m_board[i][j].resetPicture();
+				}
+			}
+		}
+	}
 }
 
 void CustomizeWindow::drawBoard()
@@ -189,9 +194,7 @@ void CustomizeWindow::drawBoard()
 	m_window.clear(); // To ensure the window is default
 
 	drawTiles();
-	drawPictures();
 	drawButtons();
-	
 
 	m_window.display();
 }
@@ -211,35 +214,64 @@ void CustomizeWindow::closeWindow()
 	m_window.close();
 }
 
-void CustomizeWindow::mouseClicked(const sf::Event event, int &cellClicked,
-								   int & robotPosition, int& doorPosition)
+void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 {
 	auto pointClicked = m_window.mapPixelToCoords(
 		{ event.mouseButton.x, event.mouseButton.y });
 
-	if (clickedOnButton(pointClicked, cellClicked, robotPosition, doorPosition)) {}
+	clickedOnButton(pointClicked, buttonClicked);
 
-	else if (cellClicked >= 0)
+	if(buttonClicked >= 0)
 	{
-		if (clickedOnTile(pointClicked))
+		if (CheckImmediateResponse(buttonClicked)) {}
+
+		else
 		{
-			if (cellClicked == robotPosition)
-			{
-				robotPosition = -1;
-			}
+			sf::Vector2i wantedTile;
+			bool onTile = clickedOnTile(pointClicked, buttonClicked, wantedTile);
 
-			else if (cellClicked == doorPosition)
+			if (onTile)
 			{
-				doorPosition = -1;
-			}
+				if (pressedOnErase(pointClicked, buttonClicked, wantedTile)) {}
 
-			placePicture(pointClicked, cellClicked);
-			drawBoard();
+				else if (buttonClicked < m_buttons.size()) // for reassurance
+				{
+					placePicture(pointClicked, buttonClicked, wantedTile);
+					validCharacters(pointClicked, buttonClicked);
+				}
+				drawBoard();
+			}
 		}
 	}
 }
 
-bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked)
+bool CustomizeWindow::pressedOnErase(sf::Vector2f pointClicked, int buttonClicked, sf::Vector2i wantedTile)
+{
+	if (m_buttons[buttonClicked].getType() != 'e')
+	{
+		return false;
+	}
+
+	eraseObject(pointClicked);
+	return true;
+}
+
+void CustomizeWindow::clearBoard()
+{
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			if (m_board[row][col].getType() != '0')
+			{
+				m_board[row][col].resetPicture();
+				m_board[row][col].setType('0');
+			}
+		}
+	}
+}
+
+void CustomizeWindow::eraseObject(sf::Vector2f pointClicked)
 {
 	for (int row = 0; row < m_row; row++)
 	{
@@ -247,14 +279,65 @@ bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked)
 		{
 			if (m_board[row][col].doesContain(pointClicked))
 			{
-				for (int pic = 0; pic < m_pictures.size(); pic++)
+				if (m_board[row][col].getType() != '0')
 				{
-					if (m_pictures[pic].getGlobalBounds().contains(pointClicked))
-					{
-						m_pictures.erase(m_pictures.begin() + pic);
-					}
+					m_board[row][col].resetPicture();
+					m_board[row][col].setType('0');
 				}
-				pointClicked = m_board[row][col].getPosition();
+			}
+		}
+	}
+}
+
+void CustomizeWindow::placePicture(sf::Vector2f& pointClicked, int buttonClicked, sf::Vector2i wantedTile)
+{
+	sf::Sprite picture = m_buttons[buttonClicked].getPicture();
+
+	pointClicked = m_board[wantedTile.y][wantedTile.x].getPosition();
+	m_board[wantedTile.y][wantedTile.x].setType(m_buttons[buttonClicked].getType());
+	m_board[wantedTile.y][wantedTile.x].setPicture(picture);
+	m_board[wantedTile.y][wantedTile.x].setPicturePosition(pointClicked);
+}
+
+bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
+{
+	switch (m_buttons[buttonClicked].getType())
+	{
+		case 'b':
+		{
+			saveBoard();
+			break;
+		}
+
+		case 'c':
+		{
+			clearBoard();
+			break;
+		}
+
+		default:
+		{
+			return false;
+		}
+	}
+	drawBoard();
+	return true;
+}
+
+void CustomizeWindow::saveBoard() // do yay
+{
+}
+
+bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked, int buttonClicked, sf::Vector2i &wantedTile)
+{
+	for (int row = 0; row < m_row; row++)
+	{
+		for (int col = 0; col < m_col; col++)
+		{
+			if (m_board[row][col].doesContain(pointClicked))
+			{
+				wantedTile.x = col;
+				wantedTile.y = row;
 				return true;
 			}
 		}

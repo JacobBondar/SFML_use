@@ -14,8 +14,7 @@ public:
 	bool isWindowOpen();
 	bool isEvent(sf::Event &event);
 	void closeWindow();
-	void mouseClicked(const sf::Event event, int& cellClicked,
-					  int& robotExists, int& doorExists);
+	void mouseClicked(const sf::Event &event, int& cellClicked);
 
 private:
 	sf::RenderWindow m_window;
@@ -29,12 +28,15 @@ private:
 	void setButtons();
 	
 	void createButton(std::string typeName, sf::Vector2f &pos);
-	bool clickedOnButton(sf::Vector2f pointClicked, int& cellClicked,
-						 int& robotExists, int& doorExists);
-	void placePicture(sf::Vector2f pointClicked, int cellClicked);
-	bool clickedOnTile(sf::Vector2f &pointClicked);
-	void drawPictures();
+	bool clickedOnButton(sf::Vector2f pointClicked, int& cellClicked);
+	void validCharacters(sf::Vector2f pointClicked, int cellClicked);
+	bool clickedOnTile(sf::Vector2f &pointClicked, int buttonClicked, sf::Vector2i &wantedTile);
 	void drawButtons();
 	void drawTiles();
-	
+	bool pressedOnErase(sf::Vector2f pointClicked, int buttonClicked, sf::Vector2i wantedTile);
+	void clearBoard();
+	void eraseObject(sf::Vector2f pointClicked);
+	void placePicture(sf::Vector2f& pointClicked, int buttonClicked, sf::Vector2i wantedTile);
+	bool CheckImmediateResponse(int buttonClicked);
+	void saveBoard();
 };
