@@ -3,7 +3,7 @@
 //-----------------------------------------------------------------------------
 
 CustomizeWindow::CustomizeWindow()
-	: m_window(sf::VideoMode::getDesktopMode(), WINDOWNAME), m_row(0), m_col(0)
+	: m_row(0), m_col(0)
 {
 	m_boardFile.open(BOARDNAME, std::ios::out | std::ios::in);
 	if (m_boardFile) // file exists
@@ -13,19 +13,7 @@ CustomizeWindow::CustomizeWindow()
 	
 	else
 	{
-		std::cout << "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted" 
-			<< " for the board\n";
-		while (std::cin >> m_col >> m_row)
-		{
-			
-			if (m_col <= 33 && m_row <= 15 && m_col >= 1 && m_row >= 1)
-			{
-				break;
-			}
-			std::cout << "Enter valid parameters for col and row\n"
-				<< "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted" 
-				<< " for the board\n";
-		}
+		recieveValues();
 
 		m_boardFile.open(BOARDNAME, 
 						 std::ios::out | std::ios::in | std::ios::trunc);
@@ -36,11 +24,41 @@ CustomizeWindow::CustomizeWindow()
 		}
 	}
 
+	m_window.create(sf::VideoMode::getDesktopMode(), WINDOWNAME);
 	setButtons();
 	setTiles();
 	setFromFile();
 
 	drawBoard();
+}
+
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::run()
+{
+	auto event = sf::Event{};
+	int cellClicked = -1;
+
+	while (m_window.isOpen())
+	{
+		if (m_window.waitEvent(event))
+		{
+			switch (event.type)
+			{
+			case sf::Event::Closed:
+			{
+				m_window.close();
+				m_boardFile.close();
+				break;
+			}
+			case sf::Event::MouseButtonReleased:
+			{
+				mouseClicked(event, cellClicked);
+				break;
+			}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -322,27 +340,6 @@ void CustomizeWindow::drawBoard()
 
 //-----------------------------------------------------------------------------
 
-bool CustomizeWindow::isWindowOpen() const
-{
-	return m_window.isOpen();
-}
-
-//-----------------------------------------------------------------------------
-
-bool CustomizeWindow::isEvent(sf::Event& event)
-{
-	return m_window.waitEvent(event);
-}
-
-//-----------------------------------------------------------------------------
-
-void CustomizeWindow::closeWindow()
-{
-	m_window.close();
-}
-
-//-----------------------------------------------------------------------------
-
 void CustomizeWindow::mouseClicked(const sf::Event &event, int & buttonClicked)
 {
 	auto pointClicked = m_window.mapPixelToCoords(
@@ -399,6 +396,30 @@ void CustomizeWindow::clearBoard()
 			checkTile(row, col);
 		}
 	}
+	setNewWindow();
+}
+
+//-----------------------------------------------------------------------------
+
+void CustomizeWindow::setNewWindow()
+{
+	m_window.close();
+
+	for (int row = 0; row < m_row; row++)
+	{
+		m_board[row].clear();
+		m_board[row].shrink_to_fit();
+	}
+	m_board.clear();
+	m_board.shrink_to_fit();
+
+	recieveValues();
+	m_boardFile.close();
+	m_boardFile.open(BOARDNAME,
+		std::ios::out | std::ios::in | std::ios::trunc); // to empty the file
+
+	setTiles();
+	m_window.create(sf::VideoMode::getDesktopMode(), WINDOWNAME);
 }
 
 //-----------------------------------------------------------------------------
@@ -430,6 +451,25 @@ void CustomizeWindow::checkTile(int row, int col)
 
 //-----------------------------------------------------------------------------
 
+void CustomizeWindow::recieveValues()
+{
+	std::cout << "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted"
+		<< " for the board\n";
+	while (std::cin >> m_col >> m_row)
+	{
+
+		if (m_col <= MAXCOL && m_row <= MAXROW && m_col >= MIN && m_row >= MIN)
+		{
+			break;
+		}
+		std::cout << "Enter valid parameters for col and row\n"
+			<< "Enter 1 <= col <= 33 and 1 <= row <= 15 wanted"
+			<< " for the board\n";
+	}
+}
+
+//-----------------------------------------------------------------------------
+
 void CustomizeWindow::placePicture(sf::Vector2f& pointClicked, 
 								   int buttonClicked, sf::Vector2i wantedTile)
 {
@@ -444,7 +484,7 @@ void CustomizeWindow::placePicture(sf::Vector2f& pointClicked,
 
 //-----------------------------------------------------------------------------
 
-bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
+bool CustomizeWindow::CheckImmediateResponse(int &buttonClicked)
 {
 	std::string gotText = m_buttons[buttonClicked].getType();
 
@@ -462,6 +502,7 @@ bool CustomizeWindow::CheckImmediateResponse(int buttonClicked)
 	{
 		return false;
 	}
+	buttonClicked = -1;
 	drawBoard();
 	return true;
 }
@@ -540,8 +581,3 @@ bool CustomizeWindow::clickedOnTile(sf::Vector2f &pointClicked,
 }
 
 //-----------------------------------------------------------------------------
-
-void CustomizeWindow::closeFile()
-{
-	m_boardFile.close();
-}

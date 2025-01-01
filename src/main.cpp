@@ -1,11 +1,11 @@
 #include <iostream>
-#include "Controller.h"
+#include "CustomizeWindow.h"
 
 //-----------------------------------------------------------------------------
 
 int main()
 {
-	auto board = Controller();
+	auto board = CustomizeWindow();
 	board.run();
 	
 	exit(EXIT_SUCCESS);

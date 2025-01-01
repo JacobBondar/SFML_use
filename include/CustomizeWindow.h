@@ -6,21 +6,48 @@
 #include "Button.h"
 #include "fstream"
 #include "Tile.h"
-#include "ConstNames.h"
 #include <thread>
 #include <chrono>
 using namespace std::chrono_literals;
 
+//--------------------------- const section -----------------------------------
+
+const std::string WINDOWNAME = "Window";
+const std::string BOARDNAME = "board.txt";
+const std::string TOOLBAR = "Toolbar.txt";
+
+const std::string ROBOTNAME = "robot.jpg";
+const std::string DOORNAME = "door.jpg";
+const std::string GUARDNAME = "guard.jpg";
+const std::string STONENAME = "stone.jpg";
+const std::string WALLNAME = "wall.jpg";
+const std::string CLEARNAME = "clear.jpg";
+const std::string SAVENAME = "save.jpg";
+const std::string ERASERNAME = "eraser.jpg";
+
+const char SPACETYPE = ' ';
+const char ROBOTTYPE = '/';
+const char GUARDTYPE = '!';
+const char DOORTYPE = 'D';
+const char WALLTYPE = '#';
+const char STONETYPE = '@';
+
+const int SPACEBUTTONS = 150;
+const int MAXCOL = 33;
+const int MAXROW = 15;
+const int MIN = 1;
+
+const sf::Vector2f STARTPOINTTILE = { 50, 150 };
+const sf::Vector2f STARTPOINTBUTTONS = { 10, 10 };
+
+//--------------------------- class section -----------------------------------
 
 class CustomizeWindow
 {
 public:
 	CustomizeWindow();
+	void run();
 	void mouseClicked(const sf::Event &event, int& cellClicked);
-	bool isWindowOpen() const;
-	bool isEvent(sf::Event &event);
-	void closeWindow();
-	void closeFile();
 	void drawBoard();
 
 private:
@@ -48,7 +75,7 @@ private:
 	void eraseObject(sf::Vector2f pointClicked);
 	void placePicture(sf::Vector2f& pointClicked, int buttonClicked,
 					  sf::Vector2i wantedTile);
-	bool CheckImmediateResponse(int buttonClicked);
+	bool CheckImmediateResponse(int &buttonClicked);
 	void saveBoard();
 	void updateValues();
 	std::string findCharacter(char type) const;
@@ -56,4 +83,6 @@ private:
 	std::string findTypeCharToName(char type) const;
 	void printAfterSave();
 	void checkTile(int row, int col);
+	void recieveValues();
+	void setNewWindow();
 };

@@ -2,6 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <string>
 
+//--------------------------- class section -----------------------------------
+
 class Button
 {
 public:

@@ -2,7 +2,13 @@
 #include <SFML/Graphics.hpp>
 #include <vector>
 #include <string>
-#include "ConstNames.h"
+
+//--------------------------- const section -----------------------------------
+
+const int SIZEOFPICTURE = 50;
+const std::string SPACENAME = " ";
+
+//--------------------------- class section -----------------------------------
 
 class Tile
 {
