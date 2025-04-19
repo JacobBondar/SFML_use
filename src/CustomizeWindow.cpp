@@ -14,7 +14,6 @@ CustomizeWindow::CustomizeWindow()
 	else
 	{
 		recieveValues();
-
 		m_boardFile.open(BOARDNAME, 
 						 std::ios::out | std::ios::in | std::ios::trunc);
 		if (!m_boardFile)
